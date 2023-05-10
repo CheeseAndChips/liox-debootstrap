@@ -5,6 +5,8 @@ set -e
 HOSTNAME="lioxbox"
 TIMEZONE="Europe/Vilnius"
 
+PATH=$PATH:/usr/sbin
+
 printf "UUID=$UUID\t/\text4\terrors=remount-ro\t0 1" > /etc/fstab
 
 apt -y install lsb-release
@@ -43,6 +45,28 @@ ff02::2 ip6-allrouters
 EOF
 
 apt -y install linux-image-amd64 firmware-linux network-manager grub2
+
+# TODO: add sublime text and vscode
+apt -y install \
+task-laptop \
+plasma-desktop kwin-x11 sddm sddm-theme-breeze xserver-xorg \
+dolphin konsole kwrite ark gwenview okular \
+firefox-esr wget \
+libreoffice-writer libreoffice-calc libreoffice-impress \
+libreoffice-kf5 libreoffice-plasma \
+xserver-xorg-video-all \
+vim-gtk joe gedit scite geany geany-plugins codeblocks codeblocks-contrib \
+kate \
+zsh mc emacs nano git \
+make gcc g++ gdb ddd valgrind \
+python3 \
+strace lsof tree curl dnsutils screen \
+iotop tmux htop kpartx tsocks units mlocate \
+bridge-utils bash-completion rfkill apt-file ntp locales \
+iptables-persistent \
+localepurge \
+gdb-doc manpages \
+python3-requests
 
 echo "root:$ROOT_PASSWD" | chpasswd
 

@@ -2,15 +2,29 @@
 
 set -e
 
+if [ $(id -u) -ne 0 ]
+then
+	echo "Script must be run as root"
+	exit 1
+fi
+
 BUILD_DIR="./mnt"
 BUILD_IMAGE="./image.raw"
-IMAGE_SIZE_MB=4096
+IMAGE_SIZE_MB=8192
 ARCH="amd64"
+CACHE_DIR="./cache"
+
+CACHE_DIR=$(realpath $CACHE_DIR)
 
 if [ -d $BUILD_DIR ]
 then
 	echo "Directory \`$BUILD_DIR\` exists"
 	exit 1
+fi
+
+if [ ! -d $CACHE_DIR ]
+then
+	mkdir $CACHE_DIR
 fi
 
 if [ -f $BUILD_IMAGE ]
@@ -30,9 +44,7 @@ echo ""
 dd if=/dev/zero of=$BUILD_IMAGE bs=1M count=$IMAGE_SIZE_MB status=progress
 mkdir $BUILD_DIR
 parted image.raw mklabel msdos
-echo -e '1M,+,L' | sudo sfdisk $BUILD_IMAGE
-
-echo -e '1M,+,L' | sfdisk ./image.raw
+echo -e '1M,+,L' | sfdisk $BUILD_IMAGE
 IMAGE_LODEVICE=$(losetup -f $BUILD_IMAGE --partscan --show)
 IMAGE_ROOTPART=${IMAGE_LODEVICE}p1
 echo "Image device $IMAGE_LODEVICE"
