@@ -63,12 +63,12 @@ cp ./chroot-script.sh ./config.sh $BUILD_DIR
 cp -r ./includes.chroot/* $BUILD_DIR
 UUID=$(lsblk -f $IMAGE_ROOTPART | tail -n 1 | tr -s " " | cut -d " " -f 4)
 chroot $BUILD_DIR /bin/bash -c \
-	"UUID="$UUID" \
-	D0_PWD_HASH="${D0_PWD_HASH}" \
-	D1_PWD_HASH="${D1_PWD_HASH}" \
-	D2_PWD_HASH="${D2_PWD_HASH}" \
-	LIOADMIN_PWD_HASH="${LIOADMIN_PWD_HASH}" \
-	IMAGE_LODEVICE="$IMAGE_LODEVICE" \
+	"UUID='$UUID' \
+	D0_PWD_HASH='${D0_PWD_HASH}' \
+	D1_PWD_HASH='${D1_PWD_HASH}' \
+	D2_PWD_HASH='${D2_PWD_HASH}' \
+	LIOADMIN_PWD_HASH='${LIOADMIN_PWD_HASH}' \
+	IMAGE_LODEVICE='$IMAGE_LODEVICE' \
 	/bin/bash /chroot-script.sh"
 
 umount -R $BUILD_DIR
