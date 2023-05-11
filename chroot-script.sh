@@ -2,8 +2,7 @@
 
 set -e
 
-HOSTNAME="lioxbox"
-TIMEZONE="Europe/Vilnius"
+source config.sh
 
 PATH=$PATH:/usr/sbin
 
@@ -29,8 +28,11 @@ echo $TIMEZONE > /etc/timezone
 dpkg-reconfigure -f noninteractive tzdata
 
 apt -y install locales
-sed -i "s/# en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen
-sed -i "s/# lt_LT.UTF-8/lt_LT.UTF-8/" /etc/locale.gen
+echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+echo "lt_LT.UTF-8 UTF-8" >> /etc/locale.gen
+echo "pl_PL.UTF-8 UTF-8" >> /etc/locale.gen
+echo "ru_RU.UTF-8 UTF-8" >> /etc/locale.gen
+echo "LANG=\"en_US.UTF-8\"" > /etc/default/locale
 locale-gen
 
 echo $HOSTNAME > /etc/hostname
@@ -44,10 +46,7 @@ ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 EOF
 
-apt -y install linux-image-amd64 firmware-linux network-manager grub2
-
-# TODO: add sublime text and vscode
-apt -y install \
+apt -y install linux-image-amd64 firmware-linux network-manager grub2 \
 task-laptop \
 plasma-desktop kwin-x11 sddm sddm-theme-breeze xserver-xorg \
 dolphin konsole kwrite ark gwenview okular \
@@ -66,9 +65,22 @@ bridge-utils bash-completion rfkill apt-file ntp locales \
 iptables-persistent \
 localepurge \
 gdb-doc manpages \
-python3-requests
+python3-requests \
+kcalc apt-transport-https
 
-echo "root:$ROOT_PASSWD" | chpasswd
+mkdir -p /etc/apt/trusted.gpg.d/
+echo "deb https://download.sublimetext.com/ apt/stable/" | tee /etc/apt/sources.list.d/sublime-text.list
+echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" | tee /etc/apt/sources.list.d/vscode.list
+wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | gpg --dearmor -o /etc/apt/trusted.gpg.d/sublimehq-archive.gpg
+wget -qO - https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/ms-vscode-keyring.gpg
+apt -y update
+apt -y install sublime-text code
+
+useradd -m -s /bin/bash -p ${D0_PWD_HASH} d0
+useradd -m -s /bin/bash -p ${D1_PWD_HASH} d1
+useradd -m -s /bin/bash -p ${D2_PWD_HASH} d2
+useradd -m -s /bin/bash -p ${LIOADMIN_PWD_HASH} lioadmin
+usermod -a -G sudo lioadmin
 
 echo "GRUB_DISABLE_OS_PROBER=true" >> /etc/default/grub
 update-grub

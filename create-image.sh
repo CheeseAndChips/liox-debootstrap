@@ -8,13 +8,7 @@ then
 	exit 1
 fi
 
-BUILD_DIR="./mnt"
-BUILD_IMAGE="./image.raw"
-IMAGE_SIZE_MB=8192
-ARCH="amd64"
-CACHE_DIR="./cache"
-
-CACHE_DIR=$(realpath $CACHE_DIR)
+source config.sh
 
 if [ -d $BUILD_DIR ]
 then
@@ -37,9 +31,17 @@ then
 	fi
 fi
 
-echo -n "Enter root password: "
-read -s ROOT_PASSWD
-echo ""
+echo -n "Enter lioadmin user "
+LIOADMIN_PWD_HASH=$(mkpasswd -m sha-512)
+
+echo -n "Enter d0 user "
+D0_PWD_HASH=$(mkpasswd -m sha-512)
+
+echo -n "Enter d1 user "
+D1_PWD_HASH=$(mkpasswd -m sha-512)
+
+echo -n "Enter d2 user "
+D2_PWD_HASH=$(mkpasswd -m sha-512)
 
 dd if=/dev/zero of=$BUILD_IMAGE bs=1M count=$IMAGE_SIZE_MB status=progress
 mkdir $BUILD_DIR
@@ -57,11 +59,15 @@ mount --make-rslave --rbind /proc $BUILD_DIR/proc
 mount --make-rslave --rbind /sys $BUILD_DIR/sys
 mount --make-rslave --rbind /dev $BUILD_DIR/dev
 mount --make-rslave --rbind /run $BUILD_DIR/run
-cp ./chroot-script.sh $BUILD_DIR
+cp ./chroot-script.sh ./config.sh $BUILD_DIR
+cp -r ./includes.chroot/* $BUILD_DIR
 UUID=$(lsblk -f $IMAGE_ROOTPART | tail -n 1 | tr -s " " | cut -d " " -f 4)
 chroot $BUILD_DIR /bin/bash -c \
 	"UUID="$UUID" \
-	ROOT_PASSWD="$ROOT_PASSWD" \
+	D0_PWD_HASH="${D0_PWD_HASH}" \
+	D1_PWD_HASH="${D1_PWD_HASH}" \
+	D2_PWD_HASH="${D2_PWD_HASH}" \
+	LIOADMIN_PWD_HASH="${LIOADMIN_PWD_HASH}" \
 	IMAGE_LODEVICE="$IMAGE_LODEVICE" \
 	/bin/bash /chroot-script.sh"
 

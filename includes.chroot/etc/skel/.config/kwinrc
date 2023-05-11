@@ -1,0 +1,12 @@
+[Effect-PresentWindows]
+BorderActivateAll=9
+
+[ElectricBorders]
+TopLeft=None
+
+[TabBox]
+BorderActivate=9
+
+[org.kde.kdecoration2]
+ButtonsOnLeft=M
+ButtonsOnRight=IAX
