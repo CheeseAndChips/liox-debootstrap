@@ -46,7 +46,16 @@ ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 EOF
 
-apt -y install linux-image-amd64 firmware-linux network-manager grub2 \
+apt -y install linux-image-amd64 firmware-linux \
+network-manager grub2 debconf-utils
+
+echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | debconf-set-selections
+echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | debconf-set-selections
+echo "keyboard-configuration keyboard-configuration/variant select English (US)" | debconf-set-selections
+echo "localepurge localepurge/nopurge multiselect en, en_US, en_US.UTF-8, lt, lt_LT, lt_LT.UTF-8, pl, pl_PL, pl_PL.UTF-8, ru, ru_RU, ru_RU.UTF-8" | debconf-set-selections
+echo "localepurge localepurge/use-dpkg-feature boolean false" | debconf-set-selections
+
+apt -y install \
 task-laptop \
 plasma-desktop kwin-x11 sddm sddm-theme-breeze xserver-xorg \
 dolphin konsole kwrite ark gwenview okular \
