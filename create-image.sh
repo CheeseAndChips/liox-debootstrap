@@ -45,10 +45,11 @@ D2_PWD_HASH=$(mkpasswd -m sha-512)
 
 dd if=/dev/zero of=$BUILD_IMAGE bs=1M count=$IMAGE_SIZE_MB status=progress
 mkdir $BUILD_DIR
-parted image.raw mklabel msdos
-echo -e '1M,+,L' | sfdisk $BUILD_IMAGE
+
+parted image.raw mklabel gpt
+echo -e ',1M,21686148-6449-6E6F-744E-656564454649\n,+,L' | sfdisk $BUILD_IMAGE
 IMAGE_LODEVICE=$(losetup -f $BUILD_IMAGE --partscan --show)
-IMAGE_ROOTPART=${IMAGE_LODEVICE}p1
+IMAGE_ROOTPART=${IMAGE_LODEVICE}p2
 echo "Image device $IMAGE_LODEVICE"
 mkfs.ext4 $IMAGE_ROOTPART
 
