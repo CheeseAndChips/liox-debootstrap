@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -x
 
 if [ $(id -u) -ne 0 ]
 then
@@ -16,10 +17,8 @@ then
 	exit 1
 fi
 
-if [ ! -d $CACHE_DIR ]
-then
-	mkdir $CACHE_DIR
-fi
+mkdir -p $CACHE_DIR
+mkdir -p $CHROOT_CACHE_DIR
 
 if [ -f $BUILD_IMAGE ]
 then
@@ -45,7 +44,7 @@ D2_PWD_HASH=$(mkpasswd -m sha-512)
 
 dd if=/dev/zero of=$BUILD_IMAGE bs=1M count=$IMAGE_SIZE_MB status=progress
 mkdir $BUILD_DIR
-parted image.raw mklabel msdos
+parted $BUILD_IMAGE mklabel msdos
 echo -e '1M,+,L' | sfdisk $BUILD_IMAGE
 IMAGE_LODEVICE=$(losetup -f $BUILD_IMAGE --partscan --show)
 IMAGE_ROOTPART=${IMAGE_LODEVICE}p1
@@ -56,12 +55,15 @@ tune2fs -O "^metadata_csum" $IMAGE_ROOTPART
 tune2fs -O "^orphan_file" $IMAGE_ROOTPART
 
 mount $IMAGE_ROOTPART $BUILD_DIR
-debootstrap --cache-dir=$(realpath "./cache") --arch $ARCH stable $BUILD_DIR https://deb.debian.org/debian
+debootstrap --cache-dir=$(realpath $CACHE_DIR) --arch $ARCH stable $BUILD_DIR https://deb.debian.org/debian
 
+mkdir -p $BUILD_DIR/var/cache/apt/archives
 mount --make-rslave --rbind /proc $BUILD_DIR/proc
 mount --make-rslave --rbind /sys $BUILD_DIR/sys
 mount --make-rslave --rbind /dev $BUILD_DIR/dev
 mount --make-rslave --rbind /run $BUILD_DIR/run
+mount --bind $CHROOT_CACHE_DIR $BUILD_DIR/var/cache/apt/archives
+mount -t tmpfs chroot_tmp $BUILD_DIR/tmp
 cp ./chroot-script.sh ./config.sh $BUILD_DIR
 cp -r ./includes.chroot/* $BUILD_DIR
 UUID=$(lsblk -f $IMAGE_ROOTPART | tail -n 1 | tr -s " " | cut -d " " -f 4)

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -x
 
 source config.sh
 
@@ -11,14 +12,14 @@ printf "UUID=$UUID\t/\text4\terrors=remount-ro\t0 1" > /etc/fstab
 apt -y install lsb-release
 CODENAME=$(lsb_release --codename --short)
 cat > /etc/apt/sources.list << EOF
-deb https://deb.debian.org/debian/ $CODENAME main contrib non-free
-deb-src https://deb.debian.org/debian/ $CODENAME main contrib non-free
+deb https://deb.debian.org/debian/ $CODENAME main contrib non-free non-free-firmware
+deb-src https://deb.debian.org/debian/ $CODENAME main contrib non-free non-free-firmware
 
-deb https://security.debian.org/debian-security $CODENAME-security main contrib non-free
-deb-src https://security.debian.org/debian-security $CODENAME-security main contrib non-free
+deb https://security.debian.org/debian-security $CODENAME-security main contrib non-free non-free-firmware
+deb-src https://security.debian.org/debian-security $CODENAME-security main contrib non-free non-free-firmware
 
-deb https://deb.debian.org/debian/ $CODENAME-updates main contrib non-free
-deb-src https://deb.debian.org/debian/ $CODENAME-updates main contrib non-free
+deb https://deb.debian.org/debian/ $CODENAME-updates main contrib non-free non-free-firmware
+deb-src https://deb.debian.org/debian/ $CODENAME-updates main contrib non-free non-free-firmware
 EOF
 
 apt -y update
@@ -63,7 +64,7 @@ firefox-esr wget \
 libreoffice-writer libreoffice-calc libreoffice-impress \
 libreoffice-kf5 libreoffice-plasma \
 xserver-xorg-video-all \
-vim-gtk joe gedit scite geany geany-plugins codeblocks codeblocks-contrib \
+vim-gtk3 joe gedit scite geany geany-plugins codeblocks codeblocks-contrib \
 kate \
 zsh mc emacs nano git \
 make gcc g++ gdb ddd valgrind \
