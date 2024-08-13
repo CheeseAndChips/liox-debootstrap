@@ -51,6 +51,9 @@ IMAGE_LODEVICE=$(losetup -f $BUILD_IMAGE --partscan --show)
 IMAGE_ROOTPART=${IMAGE_LODEVICE}p1
 echo "Image device $IMAGE_LODEVICE"
 mkfs.ext4 $IMAGE_ROOTPART
+tune2fs -O "^metadata_csum_seed" $IMAGE_ROOTPART
+tune2fs -O "^metadata_csum" $IMAGE_ROOTPART
+tune2fs -O "^orphan_file" $IMAGE_ROOTPART
 
 mount $IMAGE_ROOTPART $BUILD_DIR
 debootstrap --cache-dir=$(realpath "./cache") --arch $ARCH stable $BUILD_DIR https://deb.debian.org/debian
