@@ -47,24 +47,29 @@ dd if=/dev/zero of=$BUILD_IMAGE bs=1M count=$IMAGE_SIZE_MB status=progress
 mkdir $BUILD_DIR
 
 parted image.raw mklabel gpt
-echo -e ',1M,21686148-6449-6E6F-744E-656564454649\n,+,L' | sfdisk $BUILD_IMAGE
+echo -e ',16M,C12A7328-F81F-11D2-BA4B-00A0C93EC93B\n,+,L' | sfdisk $BUILD_IMAGE
 IMAGE_LODEVICE=$(losetup -f $BUILD_IMAGE --partscan --show)
+IMAGE_EFIPART=${IMAGE_LODEVICE}p1
 IMAGE_ROOTPART=${IMAGE_LODEVICE}p2
-echo "Image device $IMAGE_LODEVICE"
+mkfs.fat -F 32 ${IMAGE_EFIPART}
 mkfs.ext4 $IMAGE_ROOTPART
 
 mount $IMAGE_ROOTPART $BUILD_DIR
 debootstrap --cache-dir=$(realpath "./cache") --arch $ARCH stable $BUILD_DIR https://deb.debian.org/debian
 
+mkdir $BUILD_DIR/boot/efi
+mount $IMAGE_EFIPART $BUILD_DIR/boot/efi
 mount --make-rslave --rbind /proc $BUILD_DIR/proc
 mount --make-rslave --rbind /sys $BUILD_DIR/sys
 mount --make-rslave --rbind /dev $BUILD_DIR/dev
 mount --make-rslave --rbind /run $BUILD_DIR/run
 cp ./chroot-script.sh ./config.sh $BUILD_DIR
 cp -r ./includes.chroot/* $BUILD_DIR
+EFI_UUID=$(lsblk -f $IMAGE_EFIPART | tail -n 1 | tr -s " " | cut -d " " -f 4)
 UUID=$(lsblk -f $IMAGE_ROOTPART | tail -n 1 | tr -s " " | cut -d " " -f 4)
 chroot $BUILD_DIR /bin/bash -c \
 	"UUID='$UUID' \
+	EFI_UUID='$EFI_UUID' \
 	D0_PWD_HASH='${D0_PWD_HASH}' \
 	D1_PWD_HASH='${D1_PWD_HASH}' \
 	D2_PWD_HASH='${D2_PWD_HASH}' \

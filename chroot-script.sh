@@ -7,18 +7,19 @@ source config.sh
 PATH=$PATH:/usr/sbin
 
 printf "UUID=$UUID\t/\text4\terrors=remount-ro\t0 1" > /etc/fstab
+printf "UUID=$EFI_UUID\t/boot/efi\tvfat\tumask=0077\t0 1" >> /etc/fstab
 
 apt -y install lsb-release
 CODENAME=$(lsb_release --codename --short)
 cat > /etc/apt/sources.list << EOF
-deb https://deb.debian.org/debian/ $CODENAME main contrib non-free
-deb-src https://deb.debian.org/debian/ $CODENAME main contrib non-free
+deb https://deb.debian.org/debian/ $CODENAME main contrib non-free-firmware
+deb-src https://deb.debian.org/debian/ $CODENAME main contrib non-free-firmware
 
-deb https://security.debian.org/debian-security $CODENAME-security main contrib non-free
-deb-src https://security.debian.org/debian-security $CODENAME-security main contrib non-free
+deb https://security.debian.org/debian-security $CODENAME-security main contrib non-free-firmware
+deb-src https://security.debian.org/debian-security $CODENAME-security main contrib non-free-firmware
 
-deb https://deb.debian.org/debian/ $CODENAME-updates main contrib non-free
-deb-src https://deb.debian.org/debian/ $CODENAME-updates main contrib non-free
+deb https://deb.debian.org/debian/ $CODENAME-updates main contrib non-free-firmware
+deb-src https://deb.debian.org/debian/ $CODENAME-updates main contrib non-free-firmware
 EOF
 
 apt -y update
@@ -47,7 +48,7 @@ ff02::2 ip6-allrouters
 EOF
 
 apt -y install linux-image-amd64 firmware-linux \
-network-manager grub2 debconf-utils
+network-manager grub2 debconf-utils efibootmgr
 
 echo "iptables-persistent iptables-persistent/autosave_v4 boolean true" | debconf-set-selections
 echo "iptables-persistent iptables-persistent/autosave_v6 boolean true" | debconf-set-selections
@@ -93,4 +94,4 @@ usermod -a -G sudo lioadmin
 
 echo "GRUB_DISABLE_OS_PROBER=true" >> /etc/default/grub
 update-grub
-grub-install --root-directory / $IMAGE_LODEVICE
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=LIOX_GRUB
