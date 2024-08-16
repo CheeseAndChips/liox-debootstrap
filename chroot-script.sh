@@ -8,6 +8,7 @@ source config.sh
 PATH=$PATH:/usr/sbin
 
 printf "UUID=$UUID\t/\text4\terrors=remount-ro\t0 1" > /etc/fstab
+printf "UUID=$EFI_UUID\t/boot/efi\tvfat\tdefaults\t0 1" >> /etc/fstab
 
 apt -y install lsb-release
 CODENAME=$(lsb_release --codename --short)
@@ -94,4 +95,4 @@ usermod -a -G sudo lioadmin
 
 echo "GRUB_DISABLE_OS_PROBER=true" >> /etc/default/grub
 update-grub
-grub-install --root-directory / $IMAGE_LODEVICE
+grub-install --target=x86_64-efi --efi-directory=/boot/efi $IMAGE_LODEVICE
